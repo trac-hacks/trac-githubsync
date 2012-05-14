@@ -88,6 +88,8 @@ class GitHubSync(Component):
             lock.close()
             os.unlink(lock_file)
 
+            self.env.log.debug("GitHubSync: Lock released")
+
         new_revisions = after_revisions - before_revisions
         if len(new_revisions) > 0:
             self.env.log.debug("GitHubSync: New revisions: %s", new_revisions)
