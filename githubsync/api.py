@@ -76,13 +76,13 @@ class GitHubSync(Component):
         try:
             self.env.log.debug("GitHubSync: Lock acquired")
 
-            before_revisions = set(trac_repo.git.repo.rev_list('--all').splitlines())
+            before_revisions = set(trac_repo.git.repo.rev_list('--branches', '--tags').splitlines())
 
             # Pulling from default source (as configured in repo configuration)
             output = trac_repo.git.repo.fetch('--all', '--prune', '--tags')
             self.env.log.debug("GitHubSync: git output: %s", output)
 
-            after_revisions = set(trac_repo.git.repo.rev_list('--all').splitlines())
+            after_revisions = set(trac_repo.git.repo.rev_list('--branches', '--tags').splitlines())
         finally:
             fcntl.lockf(lock, fcntl.LOCK_UN)
             lock.close()
