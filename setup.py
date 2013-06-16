@@ -14,7 +14,9 @@ setup(
 	license = "AGPLv3",
 	packages = [PACKAGE],
 	include_package_data = True,
-	install_requires = [],
+	install_requires = [
+		'iptools>=0.6.1',
+	],
 	zip_safe = False,
 	entry_points = {
 		'trac.plugins': '%s = %s' % (PACKAGE, PACKAGE),

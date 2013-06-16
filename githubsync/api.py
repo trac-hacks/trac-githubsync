@@ -6,11 +6,13 @@ from trac.config import ListOption
 from trac.web import IRequestHandler, IRequestFilter, RequestDone, HTTPNotFound
 from trac.versioncontrol import RepositoryManager
 
+import iptools
+
 class GitHubSync(Component):
     """This component syncs GitHub repository with local repository used by Trac."""
 
-    post_request_ips = ListOption('git', 'post_request_ips', ['207.97.227.253', '50.57.128.197', '108.171.174.178'],
-        """List of IPs POST request is accepted from.""")
+    post_request_ips = ListOption('git', 'post_request_ips', ['204.232.175.64/27', '192.30.252.0/22'],
+        """List of IPs (in CIDR format) POST request is accepted from.""")
     
     implements(IRequestHandler, IRequestFilter)
 
@@ -37,7 +39,18 @@ class GitHubSync(Component):
     def match_request(self, req):
         """Return whether the handler wants to process the given request."""
 
-        return req.method == 'POST' and req.path_info == '/githubsync' and req.remote_addr in self.post_request_ips
+        if req.method != 'POST' or req.path_info != '/githubsync':
+            return False
+
+        self.env.log.debug("GitHubSync: Request from '%s'", req.remote_addr)
+
+        for allowed_ips in self.post_request_ips:
+            if req.remote_addr in iptools.IpRangeList(allowed_ips):
+                self.env.log.debug("GitHubSync: Request from '%s' allowed, in '%s'", req.remote_addr, allowed_ips)
+                return True
+
+        self.env.log.debug("GitHubSync: Request from '%s' denied", req.remote_addr)
+        return False
 
     def process_request(self, req):
         """Process the request."""
